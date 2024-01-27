@@ -13,11 +13,10 @@ import React, { useEffect, useReducer, useRef, useState } from "react";
 import { Link, router, useRouter } from "expo-router";
 
 import { Camera, CameraType } from "expo-camera";
-import { cameraWithTensors } from "@tensorflow/tfjs-react-native";
-const TensorCamera = cameraWithTensors(Camera);
 
 const dimensions = Dimensions.get("window");
 import * as ImagePicker from "expo-image-picker";
+import Detector from "./detector";
 
 LogBox.ignoreAllLogs(true);
 
@@ -165,6 +164,7 @@ export default function App() {
 	const [cameraPermission, setCameraPermission] = useState(false);
 	const [galleryPermission, setGalleryPermission] = useState(false);
 
+	const similarity = useRef(0.0).current;
 	const [type, setType] = useState(CameraType.front);
 
 	const permisionFunction = async () => {
@@ -220,13 +220,17 @@ export default function App() {
 		}
 	}, [chosenImage]);
 
-	const Component = Camera;
 
 	return (
 		<View style={styles.container}>
 			{!imageUri && (
 				<>
-					<Component
+					<Detector 
+						imageUri={chosenImage}
+						similarityScoreRef={similarity}
+						
+					/>
+					{/* <Component
 						ref={camera}
 						autorender
 						cameraTextureHeight={dimensions.height}
@@ -238,7 +242,7 @@ export default function App() {
 						useCustomShadersToResize
 						style={styles.camera}
 						type={type}
-					></Component>
+					></Component> */}
 					<View style={styles.topContainer}>
 						<Pressable
 							onPress={!chosenImage ? pickImage : takePicture}

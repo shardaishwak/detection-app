@@ -1,6 +1,6 @@
 import { LogBox } from "react-native";
 import React from "react";
-import Detector from "./Detector";
+import Detector from "./app/detector";
 
 LogBox.ignoreAllLogs(true);
 

@@ -2,14 +2,14 @@ import { Dimensions, LogBox, Platform, StyleSheet, Text, View } from "react-nati
 import { Camera } from "expo-camera";
 import * as tf from "@tensorflow/tfjs";
 import { cameraWithTensors } from "@tensorflow/tfjs-react-native";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { requestCameraPermissions } from "./utils/CameraUtils";
-import { FPS, RESIZE_HEIGHT, RESIZE_WIDTH } from "./utils/Constants";
-import { loadModel } from "./utils/TensorFlowLoader";
+import React, { forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import { requestCameraPermissions } from "../utils/CameraUtils";
+import { FPS, RESIZE_HEIGHT, RESIZE_WIDTH } from "../utils/Constants";
+import { loadModel } from "../utils/TensorFlowLoader";
 import { Keypoint, Pose, PoseNet } from "@tensorflow-models/posenet";
 import { GLView } from "expo-gl";
 import Expo2DContext from "expo-2d-context";
-import { skeletonMap } from "./Connections";
+import { skeletonMap } from "./connections";
 
 const TensorCamera = cameraWithTensors(Camera);
 const DetectionThreshold = 0.32;
@@ -19,7 +19,7 @@ const IP = "100.66.74.214"
 
 const { width, height } = Dimensions.get("window");
 
-export default function Detector() {
+const  Detector = forwardRef((props, ref) =>  {
 	const [model, setModel] = useState<PoseNet | null>(null);
 	const [isModelReady, setIsModelReady] = useState(false);
 	const [permissionsGranted, setPermissionsGranted] = useState(false);
@@ -82,9 +82,7 @@ export default function Detector() {
 
         // Average the similarities
         const similarity = similarities.reduce((a: number, b: number) => a + b, 0) / similarities.length;
-        // console.log(similarity);
-        // console.log(labels);
-		// console.log("------");	
+        console.log(similarity);
 
 		return {score: similarity, cleaned: {score: b.score, keypoints: bKeypoints}};
 	}
@@ -164,6 +162,7 @@ export default function Detector() {
 	return isModelReady ? (
 		<View style={styles.container}>
 			<TensorCamera
+				ref={ref}
 				style={styles.camera}
 				// Tensor related props
 				type={Camera.Constants.Type.front}
@@ -185,7 +184,7 @@ export default function Detector() {
 	) : (
 		<Text>Loading...</Text>
 	);
-}
+});
 
 const styles = StyleSheet.create({
 	container: {
