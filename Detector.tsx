@@ -1,21 +1,21 @@
-import { Dimensions, LogBox, Platform, StyleSheet, Text } from "react-native";
-import Canvas from "react-native-canvas";
+import { Dimensions, LogBox, Platform, StyleSheet, Text, View } from "react-native";
 import { Camera } from "expo-camera";
 import * as tf from "@tensorflow/tfjs";
 import { cameraWithTensors } from "@tensorflow/tfjs-react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { requestCameraPermissions } from "./utils/CameraUtils";
-import { HAND_CONNECTIONS } from "./utils/TfHandPoints";
 import { FPS, RESIZE_HEIGHT, RESIZE_WIDTH } from "./utils/Constants";
 import { loadModel } from "./utils/TensorFlowLoader";
 import { Keypoint, Pose, PoseNet } from "@tensorflow-models/posenet";
 import { GLView } from "expo-gl";
 import Expo2DContext from "expo-2d-context";
+import { skeletonMap } from "./Connections";
 
 const TensorCamera = cameraWithTensors(Camera);
-const DetectionThreshold = 0.4;
+const DetectionThreshold = 0.32;
 
 LogBox.ignoreAllLogs(true);
+const IP = "100.66.74.214"
 
 const { width, height } = Dimensions.get("window");
 
@@ -24,8 +24,13 @@ export default function Detector() {
 	const [isModelReady, setIsModelReady] = useState(false);
 	const [permissionsGranted, setPermissionsGranted] = useState(false);
 	let firstPrediction = useRef<Pose>();
-	let cleanPrediction = useRef<Pose>();
+	let counter = useRef<number>(0);
 	let context = useRef<Expo2DContext>();
+
+	let textureDims: { height: any; width: any };
+	Platform.OS === "ios"
+		? (textureDims = { height: 1920, width: 1080 })
+		: (textureDims = { height: 1200, width: 1600 });
 
 	useEffect(() => {
 		// Separating camera permission request
@@ -44,6 +49,16 @@ export default function Detector() {
 		}
 	}, [permissionsGranted]);
 
+	const onCanvasCreate = useCallback((gl) => {
+		context.current = new Expo2DContext(gl, { scale: 1 });
+		const w = context.current.width / textureDims.width;
+		const h = context.current.height / textureDims.height;
+		context.current.fillStyle = "red";
+		context.current.strokeStyle = "blue";	
+		context.current.scale(4 + w, 4 + h - 1);
+	}, [textureDims.width, textureDims.height]); // dependencies
+	
+
 	function cosineSimilarity(a: Pose, b: Pose) {
         // Filter out low confidence keypoints
         const aKeypoints = a.keypoints.filter((k: Keypoint) => k.score > DetectionThreshold);
@@ -53,8 +68,6 @@ export default function Detector() {
         const aLabels = aKeypoints.map((k: Keypoint) => k.part);
         const bLabels = bKeypoints.map((k: Keypoint) => k.part);
         const labels = aLabels.filter((label: string) => bLabels.includes(label));
-		const clean = bKeypoints.filter((k: Keypoint) => labels.includes(k.part));
-		cleanPrediction.current = {score: b.score, keypoints: clean}
         
         // Calculate the cosine similarity for each keypoint
         const similarities = labels.map((label: string) => {
@@ -73,7 +86,11 @@ export default function Detector() {
         // console.log(labels);
 		// console.log("------");	
 
-		return similarity;
+		return {score: similarity, cleaned: {score: b.score, keypoints: bKeypoints}};
+	}
+
+	async function passBackData() {
+
 	}
 
 	function handleCameraStream(images: any) {
@@ -85,15 +102,12 @@ export default function Detector() {
 			model
 				.estimateMultiplePoses(nextImageTensor)
 				.then((predictions) => {
+					counter.current += 1;
 					if (predictions.length == 0) return;
-
-					if (!firstPrediction.current) {
-						console.log("first prediction set");
-						firstPrediction.current = predictions[0];
-					}
+					if (!firstPrediction.current) firstPrediction.current = predictions[0];
  
-					cosineSimilarity(firstPrediction.current, predictions[0]!)
-					mapPoints(predictions, nextImageTensor);
+					const {score, cleaned}  = cosineSimilarity(firstPrediction.current, predictions[0]!)
+					mapPoints(cleaned, nextImageTensor);
 					tf.dispose(nextImageTensor);
 				})
 				.catch((err) => {
@@ -105,39 +119,11 @@ export default function Detector() {
 		loop();
 	}
 
-	// function drawKeypoints(keypoints: any[][], ctx: CanvasRenderingContext2D) {
-	// 	keypoints.forEach((keypoint: any[]) => {
-	// 		ctx.beginPath();
-	// 		ctx.arc(keypoint[0], keypoint[1], 5, 0, 2 * Math.PI);
-	// 		ctx.fillStyle = "red";
-	// 		ctx.fill();
-	// 	});
-	// }
-
-	// function drawConnections(
-	// 	pairs: number[][][] | [any, any][],
-	// 	ctx: CanvasRenderingContext2D
-	// ) {
-	// 	ctx.beginPath();
-	// 	ctx.strokeStyle = "blue";
-	// 	ctx.lineWidth = 2;
-	// 	pairs.forEach(([start, end]) => {
-	// 		ctx.moveTo(start[0], start[1]);
-	// 		ctx.lineTo(end[0], end[1]);
-	// 	});
-	// 	ctx.stroke();
-	// }
-
-	function mapPoints(
-		predictions: Pose[],
-		nextImageTensor: any
-	) {
+	function mapPoints(cleaned: Pose, nextImageTensor: tf.Tensor3D) {
 		if (!context.current) {
 			console.log("no context or canvas");
 			return;
 		}
-		// console.log(cleanPrediction.current)
-
 	
 		const circle = (x: number, y: number, r: number) => {
 			context.current?.beginPath();
@@ -147,47 +133,36 @@ export default function Detector() {
 		}
 		context.current.clearRect(0, 0, 2000, 4000)
 
-
-		context.current.fillStyle = "red";
-		cleanPrediction.current?.keypoints.forEach((keypoint: Keypoint) => {
+		cleaned.keypoints.forEach((keypoint: Keypoint) => {
 			const { x, y } = keypoint.position;
 			circle(x, y, 5);
 		});
 
-		// circle(100, 100, 100);
-	
+		cleaned.keypoints.forEach((keypoint: Keypoint) => {
+			try {
+				if (!skeletonMap.has(keypoint.part)) return;
+				const { x: x1, y: y1 } = keypoint['position'];
+				skeletonMap.get(keypoint.part)?.forEach((part: string) => {
+					const matchingKeypoint = cleaned.keypoints.find((k: Keypoint) => k.part === part);
+					if (!matchingKeypoint) return;
+					const { x: x2, y: y2 } = matchingKeypoint.position;
+					if (context.current && x2 && y2) {
+						context.current.beginPath();
+						context.current.moveTo(x1, y1);
+						context.current.lineTo(x2, y2);
+						context.current.stroke();
+					}
+				}); 
+			} catch (error) {
+				console.log(error)
+			}
+		});
 		context.current.stroke();
 		context.current.flush();
-
-		// // Draw the keypoints and connections for each hand prediction
-		// for (const prediction of predictions) {
-		// 	const keypoints = prediction.landmarks.map((landmark) => {
-		// 		const x = flipHorizontal
-		// 			? canvas.current.width - landmark[0] * scaleWidth
-		// 			: landmark[0] * scaleWidth;
-		// 		const y = landmark[1] * scaleHeight;
-		// 		return [x, y];
-		// 	});
-
-		// 	drawKeypoints(keypoints, context.current);
-		// 	drawConnections(
-		// 		HAND_CONNECTIONS.map(([startIdx, endIdx]) => [
-		// 			keypoints[startIdx],
-		// 			keypoints[endIdx],
-		// 		]),
-		// 		context.current
-		// 	);
-		// }
 	}
 
-
-	let textureDims: { height: any; width: any };
-	Platform.OS === "ios"
-		? (textureDims = { height: 1920, width: 1080 })
-		: (textureDims = { height: 1200, width: 1600 });
-
 	return isModelReady ? (
-		<>
+		<View style={styles.container}>
 			<TensorCamera
 				style={styles.camera}
 				// Tensor related props
@@ -204,18 +179,9 @@ export default function Detector() {
 
 			<GLView
                 style={styles.canvas}
-                onContextCreate={(gl) => {
-                    context.current = new Expo2DContext(gl, { scale: 1 });
-					const w = context.current.width / textureDims.width;
-					const h = context.current.height / textureDims.height;
-
-					console.log(w, h)
-					
-
-					context.current.scale(4 + w, 4 + h - 1);
-                }}
+                onContextCreate={onCanvasCreate}
             />
-		</>
+		</View>
 	) : (
 		<Text>Loading...</Text>
 	);
@@ -224,7 +190,9 @@ export default function Detector() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#fff",
+		backgroundColor: "#000",
+		height: "100%",
+		width: "100%",
 	},
 	camera: {
 		width: width,

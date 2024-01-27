@@ -5,6 +5,8 @@ import Detector from "./Detector";
 LogBox.ignoreAllLogs(true);
 
 export default function App() {
+
+
 	return (<>
 		<Detector />
 	</>);
