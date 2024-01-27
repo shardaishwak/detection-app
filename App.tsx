@@ -4,11 +4,11 @@ import { Camera } from "expo-camera";
 import * as tf from "@tensorflow/tfjs";
 import { cameraWithTensors } from "@tensorflow/tfjs-react-native";
 import React, { useEffect, useRef, useState } from "react";
-import * as handpose from "@tensorflow-models/handpose";
 import { requestCameraPermissions } from "./utils/CameraUtils";
 import { HAND_CONNECTIONS } from "./utils/TfHandPoints";
 import { FPS, RESIZE_HEIGHT, RESIZE_WIDTH } from "./utils/Constants";
 import { loadModel } from "./utils/TensorFlowLoader";
+import { Pose, PoseNet } from "@tensorflow-models/posenet";
 
 const TensorCamera = cameraWithTensors(Camera);
 
@@ -17,7 +17,8 @@ LogBox.ignoreAllLogs(true);
 const { width, height } = Dimensions.get("window");
 
 export default function App() {
-	const [model, setModel] = useState(null);
+	const [model, setModel] = useState<PoseNet | null>(null);
+	const [firstPrediction, setFirstPrediction ] = useState<Pose | null>(null);
 	const [isModelReady, setIsModelReady] = useState(false);
 	const [permissionsGranted, setPermissionsGranted] = useState(false);
 	let context = useRef<CanvasRenderingContext2D>();
@@ -27,6 +28,7 @@ export default function App() {
 		// Separating camera permission request
 		(async () => {
 			await requestCameraPermissions(setPermissionsGranted);
+			
 		})();
 	}, []);
 
@@ -39,6 +41,14 @@ export default function App() {
 		}
 	}, [permissionsGranted]);
 
+	function cosineSimilarity(a: Pose, b: Pose) {
+		let dot = 0.0;
+
+
+		
+		return 0;
+	}
+
 	function handleCameraStream(images: any) {
 		const loop = async () => {
 			const nextImageTensor = images.next().value;
@@ -46,9 +56,22 @@ export default function App() {
 			if (!model || !nextImageTensor) throw new Error("no model");
 
 			model
-				.estimateHands(nextImageTensor)
+				.estimateMultiplePoses(nextImageTensor)
 				.then((predictions) => {
-					console.log(predictions);
+					if (predictions.length > 0) {
+						setFirstPrediction(predictions[0]);
+					} else {
+						return;			
+					}
+
+					if (!firstPrediction) {
+						if (predictions[0].score > 0.8) {
+							console.log("first prediction set");
+							setFirstPrediction(predictions[0]);
+						}
+					}
+
+					cosineSimilarity(firstPrediction!, predictions[0])
 					mapPoints(predictions, nextImageTensor);
 					tf.dispose(nextImageTensor);
 				})
@@ -89,7 +112,7 @@ export default function App() {
 		nextImageTensor: any
 	) {
 		if (!context.current || !canvas.current) {
-			console.log("no context or canvas");
+			// console.log("no context or canvas");
 			return;
 		}
 
@@ -147,6 +170,7 @@ export default function App() {
 			<TensorCamera
 				style={styles.camera}
 				// Tensor related props
+				type={Camera.Constants.Type.front}
 				cameraTextureHeight={textureDims.height}
 				cameraTextureWidth={textureDims.width}
 				resizeHeight={RESIZE_HEIGHT}

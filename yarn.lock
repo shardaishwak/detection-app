@@ -2105,21 +2105,10 @@
   resolved "https://registry.yarnpkg.com/@tensorflow-models/coco-ssd/-/coco-ssd-2.2.3.tgz#3825286569076d6788199c9cb89fb2fa31f7d2f2"
   integrity sha512-iCLGktG/XhHbP6h2FWxqCKMp/Px0lCp6MZU1fjNhjDHeaWEC9G7S7cZrnPXsfH+NewCM53YShlrHnknxU3SQig==
 
-"@tensorflow-models/hand-pose-detection@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@tensorflow-models/hand-pose-detection/-/hand-pose-detection-2.0.1.tgz#5ef2813f2d557209e9fd8f217ff800361aad76fe"
-  integrity sha512-zRA+jz2qOq5FMcyqSFxaQyi6T4YNbMbQhd6SQMI791FQ8yYj23kLgYa73g2NssR5AmM/2ATu9Vcjnf7LUrVLOQ==
-  dependencies:
-    rimraf "^3.0.2"
-    tslib "^2.6.1"
-
-"@tensorflow-models/handpose@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@tensorflow-models/handpose/-/handpose-0.1.0.tgz#9b1cc8997cb1dcb2c60918adbc4c5f25a1fdf4f4"
-  integrity sha512-ziLkR2c2eaylyi/UAaQqvg34nPiw3qL8Pa8ihXyFB3jvlZFXIqVkMJAAaqFBBUjzHMD76x7dhmSxscivCrbekg==
-  dependencies:
-    rimraf "^3.0.2"
-    tslib "^2.6.1"
+"@tensorflow-models/posenet@2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@tensorflow-models/posenet/-/posenet-2.2.2.tgz#2abcfa33b43892135d232c9c4408a38cc8f74ba6"
+  integrity sha512-0SXIksRet/IdX7WVH+JSD6W3upkGHix1hwtd3xykIoIMGR7zQ4SC5+wZcNt9ofASyxNYQoI+tUULUo4LNw0c3w==
 
 "@tensorflow/tfjs-backend-cpu@4.16.0":
   version "4.16.0"
@@ -6337,7 +6326,7 @@ ts-interface-checker@^0.1.9:
   resolved "https://registry.yarnpkg.com/ts-interface-checker/-/ts-interface-checker-0.1.13.tgz#784fd3d679722bc103b1b4b8030bcddb5db2a699"
   integrity sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==
 
-tslib@^2.0.1, tslib@^2.1.0, tslib@^2.4.0, tslib@^2.6.1:
+tslib@^2.0.1, tslib@^2.1.0, tslib@^2.4.0:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.6.2.tgz#703ac29425e7b37cd6fd456e92404d46d1f3e4ae"
   integrity sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==
