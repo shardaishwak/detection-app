@@ -24,10 +24,8 @@ export default function App() {
 				style={styles.image}
 			/>
 			<Text style={styles.text3}>Want to recreate your photos?</Text>
-			<Link href={"/camera"}>
-				<Pressable style={styles.button}>
-					<Text style={styles.buttonText}>Let's recreate!</Text>
-				</Pressable>
+			<Link href={"/camera"} style={styles.button}>
+				Let's recreate!
 			</Link>
 		</SafeAreaView>
 	);
@@ -67,9 +65,15 @@ const styles = StyleSheet.create({
 		backgroundColor: "#5001F9",
 		alignItems: "center",
 		justifyContent: "center",
+		color: "white",
 	},
 	buttonText: {
 		color: "#fff",
 		fontSize: 13,
+		width: "100%",
+		display: "flex",
+		alignItems: "center",
+		justifyContent: "center",
+		textAlign: "center",
 	},
 });
