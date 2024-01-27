@@ -13,7 +13,7 @@ import React, { useEffect, useReducer, useRef, useState } from "react";
 import { Link, router, useRouter } from "expo-router";
 
 import { Camera, CameraType } from "expo-camera";
-import uuid from 'react-native-uuid';
+import uuid from "react-native-uuid";
 
 const dimensions = Dimensions.get("window");
 import * as ImagePicker from "expo-image-picker";
@@ -24,7 +24,6 @@ LogBox.ignoreAllLogs(true);
 
 const { width, height } = Dimensions.get("window");
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
 
 const PolaroidEffect = ({ imageUri }) => {
 	const marginTop = useRef(new Animated.Value(-150 * 1.2)).current;
@@ -215,7 +214,7 @@ export default function App() {
 			setId(uuid.v4().toString());
 		}
 	};
-	
+
 	console.log(id);
 
 	useEffect(() => {
@@ -224,12 +223,11 @@ export default function App() {
 		}
 	}, [chosenImage]);
 
-
 	return (
 		<View style={styles.container}>
 			{!imageUri && (
 				<>
-					<Detector 
+					<Detector
 						ref={camera}
 						imageUri={chosenImage}
 						similarityScoreRef={similarity}
@@ -257,6 +255,7 @@ export default function App() {
 								position: "absolute",
 								left: (dimensions.width - 78) / 2,
 								bottom: 36,
+								zIndex: 10,
 							}}
 						>
 							<Image
