@@ -39,3 +39,5 @@ background-alignment/venv
 background-alignment/__pycache__
 background-alignment/.idea
 background-alignment/.vscode
+background-alignment/images
+old-backend

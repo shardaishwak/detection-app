@@ -78,14 +78,14 @@ def get_edge_image_from_bytes(image_bytes_str: str) -> list:
     overlay = np.zeros((edges.shape[0], edges.shape[1], 4), dtype=np.uint8)
     overlay[:, :] = [0, 0, 255, 0]
     overlay[edges == 255, :4] = 255
-    overlay_bytes = overlay.tobytes()
-    overlay_byte_base64 = base64.b64encode(overlay_bytes)
+    # overlay_bytes = overlay.tobytes()
+    # overlay_byte_base64 = base64.b64encode(overlay_bytes)
 
     cv2.imwrite("overlay.png", overlay)
 
     keypoints_prev, descriptors_prev = get_key_points(img)
 
-    return [overlay_byte_base64, keypoints_prev, descriptors_prev]
+    return [overlay, keypoints_prev, descriptors_prev]
 
 
 def make_matching(keypoints_1: tuple, descriptors_1: np.ndarray, image_bytes_str: str):
