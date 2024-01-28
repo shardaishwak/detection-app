@@ -150,7 +150,6 @@ export default function App() {
 		<ScrollView style={styles.container}>
 			<View style={[styles.row, { marginBottom: 0 }]}>
 				<Text style={[styles.text1, { marginBottom: 24 }]}>Map</Text>
-				<Text>Map</Text>
 			</View>
 			{!map && <Text>Map is loading...</Text>}
 			{location && (
