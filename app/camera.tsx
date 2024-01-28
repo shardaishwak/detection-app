@@ -26,6 +26,7 @@ import {
 	modificationTimeState,
 	previousImageURIState,
 } from "../recoilState";
+import * as Sharing from "expo-sharing";
 
 LogBox.ignoreAllLogs(true);
 
@@ -174,6 +175,11 @@ const PolaroidEffect = ({ imageUri, selectedImageUri, modificationTime }) => {
 			</AnimatedPressable>
 			<AnimatedPressable
 				style={[styles.button, { marginTop: 22, opacity: fadeIn }]}
+				onPress={() =>
+					Sharing.shareAsync(imageUri, {
+						dialogTitle: "Share this photo",
+					})
+				}
 			>
 				<Text style={styles.buttonText}>Share with friends</Text>
 			</AnimatedPressable>
