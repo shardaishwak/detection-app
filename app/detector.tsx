@@ -27,8 +27,7 @@ import { GLView } from "expo-gl";
 import Expo2DContext from "expo-2d-context";
 import { apiSetupBackground, genOverlayURI, skeletonMap } from "./connections";
 import { PosenetInput } from "@tensorflow-models/posenet/dist/types";
-import { manipulateAsync, FlipType, SaveFormat } from 'expo-image-manipulator';
-
+import { manipulateAsync, FlipType, SaveFormat } from "expo-image-manipulator";
 
 const TensorCamera = cameraWithTensors(Camera);
 const DetectionThreshold = 0.32;
@@ -38,22 +37,20 @@ LogBox.ignoreAllLogs(true);
 const { width, height } = Dimensions.get("window");
 
 interface DetectorProps {
-	imageUri: string | null,
-	similarityScoreRef: Ref<number | null>,
-	id: string
+	imageUri: string | null;
+	similarityScoreRef: Ref<number | null>;
+	id: string;
 }
 
-const Detector = forwardRef((props: DetectorProps, ref)=> {
+const Detector = forwardRef((props: DetectorProps, ref) => {
 	const [model, setModel] = useState<PoseNet | null>(null);
 	const [isModelReady, setIsModelReady] = useState(false);
 	const [permissionsGranted, setPermissionsGranted] = useState(false);
-	const [overlayURI, setOverlayURI] = useState<string | null>(null);
-	const [update, setUpdate] = useState(false);
-	let overlay = useRef<string | null>(null);
 	let firstPrediction = useRef<Pose>();
 	let counter = useRef<number>(0);
 	let context = useRef<Expo2DContext>();
-	
+
+	const [score, setScore] = useState<number>(0);
 
 	let textureDims: { height: any; width: any };
 	Platform.OS === "ios"
@@ -72,7 +69,6 @@ const Detector = forwardRef((props: DetectorProps, ref)=> {
 		if (permissionsGranted) {
 			(async () => {
 				await loadModel(setModel, setIsModelReady);
-				
 			})();
 		}
 	}, [permissionsGranted]);
@@ -81,47 +77,34 @@ const Detector = forwardRef((props: DetectorProps, ref)=> {
 		// Separating camera stream
 		if (isModelReady) {
 			(async () => {
-				console.log("STARTING")
+				console.log("STARTING");
 				const imageUri = props.imageUri;
 
 				if (!imageUri) return;
 
-				try {					
+				try {
 					/**
 					 * This file contains the implementation of the detector component.
 					 * The detector component is responsible for detecting objects in an image.
 					 */
 					const image = await manipulateAsync(
 						imageUri,
-						[{resize:{height: 500}}], 
-						{ base64: true, compress: 0.4, format: SaveFormat.JPEG}
-					)
-					console.log("DONE manipulating the image")
+						[{ resize: { height: 500 } }],
+						{ base64: true, compress: 0.4, format: SaveFormat.JPEG }
+					);
 					if (!image.base64) return;
-					setOverlayURI(genOverlayURI(props.id))
-					overlay.current = await apiSetupBackground(image.base64, props.id)
-					setOverlayURI(genOverlayURI(props.id))
-					setUpdate(true)
-					const b= Buffer.from(image.base64!, 'base64')
+					const b = Buffer.from(image.base64!, "base64");
 					const imgBuffer = new Uint8Array(b);
-					console.log("DONE buffering the image")	
 					const imageTensor = decodeJpeg(imgBuffer);
-					console.log("DONE decoding the image")
-					const data = await model?.estimateSinglePose(imageTensor)
+					const data = await model?.estimateSinglePose(imageTensor);
 					firstPrediction.current = data!;
 					tf.dispose(imageTensor);
-					console.log("DONE loading the original image")
 				} catch (error) {
-					console.log("ERROR loading the original image")
-					console.log(error)
+					console.log(error);
 				}
-
 			})();
 		}
-
-	}, [props.imageUri, overlayURI]);
-
-
+	}, [props.imageUri]);
 
 	const onCanvasCreate = useCallback(
 		(gl) => {
@@ -137,8 +120,12 @@ const Detector = forwardRef((props: DetectorProps, ref)=> {
 
 	function cosineSimilarity(a: Pose, b: Pose) {
 		// Filter out low confidence keypoints
-		const aKeypoints = a.keypoints.filter((k: Keypoint) => k.score > DetectionThreshold);
-		const bKeypoints = b.keypoints.filter((k: Keypoint) => k.score > DetectionThreshold);
+		const aKeypoints = a.keypoints.filter(
+			(k: Keypoint) => k.score > DetectionThreshold
+		);
+		const bKeypoints = b.keypoints.filter(
+			(k: Keypoint) => k.score > DetectionThreshold
+		);
 
 		// Take the intersection of the poses
 		const aLabels = aKeypoints.map((k: Keypoint) => k.part);
@@ -147,20 +134,30 @@ const Detector = forwardRef((props: DetectorProps, ref)=> {
 		// Calculate the cosine similarity for each keypoint
 		// Take the intersection of the poses and calculate the cosine similarity for each keypoint
 		const similarities = aKeypoints
-			.filter((k: Keypoint) => bKeypoints.some((bk: Keypoint) => bk.part === k.part))
+			.filter((k: Keypoint) =>
+				bKeypoints.some((bk: Keypoint) => bk.part === k.part)
+			)
 			.map((k: Keypoint) => {
 				const aVector = k.position;
-				const bVector = bKeypoints.find((bk: Keypoint) => bk.part === k.part)!.position;
+				const bVector = bKeypoints.find(
+					(bk: Keypoint) => bk.part === k.part
+				)!.position;
 				const dotProduct = aVector.x * bVector.x + aVector.y * bVector.y;
-				const aMagnitude = Math.sqrt(aVector.x * aVector.x + aVector.y * aVector.y);
-				const bMagnitude = Math.sqrt(bVector.x * bVector.x + bVector.y * bVector.y);
+				const aMagnitude = Math.sqrt(
+					aVector.x * aVector.x + aVector.y * aVector.y
+				);
+				const bMagnitude = Math.sqrt(
+					bVector.x * bVector.x + bVector.y * bVector.y
+				);
 				const cosineSimilarity = dotProduct / (aMagnitude * bMagnitude);
 				return cosineSimilarity;
 			});
 
 		// Average the similarities
-		const similarity = similarities.reduce((a: number, b: number) => a + b, 0) / aKeypoints.length;
-		
+		const similarity =
+			similarities.reduce((a: number, b: number) => a + b, 0) /
+			aKeypoints.length;
+
 		// console.log(similarity)
 
 		return {
@@ -174,9 +171,8 @@ const Detector = forwardRef((props: DetectorProps, ref)=> {
 	function handleCameraStream(images: any) {
 		const loop = async () => {
 			const nextImageTensor = images.next().value;
-			
-			if (!model || !nextImageTensor) throw new Error("no model");
 
+			if (!model || !nextImageTensor) throw new Error("no model");
 
 			model
 				.estimateMultiplePoses(nextImageTensor)
@@ -189,6 +185,7 @@ const Detector = forwardRef((props: DetectorProps, ref)=> {
 						predictions[0]!
 					);
 					console.log(score);
+					setScore(score);
 					// console.log(firstPrediction.current.keypoints);
 					mapPoints(cleaned, nextImageTensor);
 					tf.dispose(nextImageTensor);
@@ -248,10 +245,6 @@ const Detector = forwardRef((props: DetectorProps, ref)=> {
 
 	return isModelReady ? (
 		<View style={styles.container}>
-			<Image 
-				source={{uri: overlayURI}}
-				style={styles.overlay}
-			/>	
 			<TensorCamera
 				ref={ref}
 				style={styles.camera}
@@ -267,6 +260,9 @@ const Detector = forwardRef((props: DetectorProps, ref)=> {
 				useCustomShadersToResize={false}
 			/>
 			<GLView style={styles.canvas} onContextCreate={onCanvasCreate} />
+			<Text style={{ position: "absolute", top: 100, right: 20, zIndex: 999 }}>
+				{score}
+			</Text>
 		</View>
 	) : (
 		<Text>Loading...</Text>
@@ -276,9 +272,9 @@ const Detector = forwardRef((props: DetectorProps, ref)=> {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#00",
 		height: "100%",
 		width: "100%",
+		backgroundColor: "black",
 	},
 	camera: {
 		width: width,
