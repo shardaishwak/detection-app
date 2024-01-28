@@ -26,7 +26,6 @@ import {
 	modificationTimeState,
 	previousImageURIState,
 } from "../recoilState";
-import * as FileSystem from "expo-file-system";
 
 LogBox.ignoreAllLogs(true);
 
