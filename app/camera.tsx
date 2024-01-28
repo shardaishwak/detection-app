@@ -1,4 +1,5 @@
 import {
+	Alert,
 	Animated,
 	Dimensions,
 	Image,
@@ -19,6 +20,8 @@ const dimensions = Dimensions.get("window");
 import * as ImagePicker from "expo-image-picker";
 import Detector from "./detector";
 import * as FileSystem from "expo-file-system";
+import { useRecoilState } from "recoil";
+import { imageURIState } from "../recoilState";
 
 LogBox.ignoreAllLogs(true);
 
@@ -31,6 +34,9 @@ const PolaroidEffect = ({ imageUri }) => {
 	const height = useRef(new Animated.Value(150 * 1.2)).current;
 	const fadeOut = useRef(new Animated.Value(1)).current;
 	const fadeIn = useRef(new Animated.Value(0)).current;
+
+	// recoil to save imageURI
+	const [imageURI, setImageURI] = useRecoilState(imageURIState);
 
 	const widthImage = useRef(new Animated.Value(80 * 1.2)).current;
 	const heightImage = useRef(new Animated.Value(100 * 1.2)).current;
@@ -99,6 +105,7 @@ const PolaroidEffect = ({ imageUri }) => {
 			animateScale();
 		}, 3000);
 	}, []);
+
 	return (
 		<>
 			<Animated.Text
@@ -143,7 +150,14 @@ const PolaroidEffect = ({ imageUri }) => {
 			>
 				Congratulation on successfully recreating the photo!
 			</Animated.Text>
-			<AnimatedPressable style={[styles.button, { opacity: fadeIn }]}>
+			<AnimatedPressable
+				onPress={() => {
+					router.push("/add");
+					// save to recoil
+					setImageURI(imageUri);
+				}}
+				style={[styles.button, { opacity: fadeIn }]}
+			>
 				<Text style={styles.buttonText}>Save in album</Text>
 			</AnimatedPressable>
 			<AnimatedPressable
