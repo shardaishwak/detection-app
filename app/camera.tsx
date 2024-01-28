@@ -13,16 +13,18 @@ import React, { useEffect, useReducer, useRef, useState } from "react";
 import { Link, router, useRouter } from "expo-router";
 
 import { Camera, CameraType } from "expo-camera";
+import uuid from 'react-native-uuid';
 
 const dimensions = Dimensions.get("window");
 import * as ImagePicker from "expo-image-picker";
 import Detector from "./detector";
+import * as FileSystem from "expo-file-system";
 
 LogBox.ignoreAllLogs(true);
 
 const { width, height } = Dimensions.get("window");
-
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 
 const PolaroidEffect = ({ imageUri }) => {
 	const marginTop = useRef(new Animated.Value(-150 * 1.2)).current;
@@ -157,14 +159,15 @@ const PolaroidEffect = ({ imageUri }) => {
 export default function App() {
 	const camera = useRef();
 	const [imageUri, setImageUri] = useState(null);
-	const [chosenImage, setChosenImage] = useState(null);
+	const [chosenImage, setChosenImage] = useState<string | null>(null);
+	const [id, setId] = useState<string | null>(null);
 
 	const router = useRouter();
 
 	const [cameraPermission, setCameraPermission] = useState(false);
 	const [galleryPermission, setGalleryPermission] = useState(false);
 
-	const similarity = useRef(0.0).current;
+	const similarity = useRef(0.0);
 	const [type, setType] = useState(CameraType.front);
 
 	const permisionFunction = async () => {
@@ -207,12 +210,13 @@ export default function App() {
 			quality: 1,
 		});
 
-		console.log(result);
-
 		if (!result.canceled) {
 			setChosenImage(result.assets[0].uri);
+			setId(uuid.v4().toString());
 		}
 	};
+	
+	console.log(id);
 
 	useEffect(() => {
 		if (!chosenImage) {
@@ -226,9 +230,10 @@ export default function App() {
 			{!imageUri && (
 				<>
 					<Detector 
+						ref={camera}
 						imageUri={chosenImage}
 						similarityScoreRef={similarity}
-						
+						id={id}
 					/>
 					{/* <Component
 						ref={camera}

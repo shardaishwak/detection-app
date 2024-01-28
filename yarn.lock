@@ -3730,6 +3730,13 @@ expo-image-loader@~4.6.0:
   resolved "https://registry.yarnpkg.com/expo-image-loader/-/expo-image-loader-4.6.0.tgz#ca7d4fdf53125bff2091d3a2c34a3155f10df147"
   integrity sha512-RHQTDak7/KyhWUxikn2yNzXL7i2cs16cMp6gEAgkHOjVhoCJQoOJ0Ljrt4cKQ3IowxgCuOrAgSUzGkqs7omj8Q==
 
+expo-image-manipulator@^11.8.0:
+  version "11.8.0"
+  resolved "https://registry.yarnpkg.com/expo-image-manipulator/-/expo-image-manipulator-11.8.0.tgz#e52351728619e534c949ae4b394af2c7c5d16702"
+  integrity sha512-ZWVrHnYmwJq6h7auk+ropsxcNi+LyZcPFKQc8oy+JA0SaJosfShvkCm7RADWAunHmfPCmjHrhwPGEu/rs7WG/A==
+  dependencies:
+    expo-image-loader "~4.6.0"
+
 expo-image-picker@~14.7.1:
   version "14.7.1"
   resolved "https://registry.yarnpkg.com/expo-image-picker/-/expo-image-picker-14.7.1.tgz#c51faff3a3fbffc6ae93d7155370beb1a2d2baea"
@@ -5983,6 +5990,16 @@ react-native-screens@~3.29.0:
   dependencies:
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
+
+react-native-simple-heic2jpg@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/react-native-simple-heic2jpg/-/react-native-simple-heic2jpg-0.1.1.tgz#236540ce41eb3989849ee3690eb479ea6b5f43fe"
+  integrity sha512-AhPNMQuay8mtgNjb/E8TPEFfuUJfjNxdY39tjIbINnMdnJ577VNklOktM0rtXmJAT5J++jvshA+P3Zb3c3Bbcw==
+
+react-native-uuid@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/react-native-uuid/-/react-native-uuid-2.0.1.tgz#ed4e2dfb1683eddb66967eb5dca140dfe1abddb9"
+  integrity sha512-cptnoIbL53GTCrWlb/+jrDC6tvb7ypIyzbXNJcpR3Vab0mkeaaVd5qnB3f0whXYzS+SMoSQLcUUB0gEWqkPC0g==
 
 react-native-web@^0.19.10:
   version "0.19.10"

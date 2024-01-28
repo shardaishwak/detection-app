@@ -38,14 +38,14 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.post("/image-outline")
+@app.post("/image-outline/")
 async def get_image_outline(image_item: ImageItem = Body(...)) -> str:
     points, keypoints, descriptors = get_edge_image_from_bytes(image_item.image)
     all_users.setNewUser(image_item.id, image_item.image, keypoints, descriptors)
     return points
 
 
-@app.post("/align-background")
+@app.post("/align-background/")
 async def get_image_alignment(image_item: ImageItem = Body(...)) -> dict:
     if not all_users.isUser(image_item.id):
         return {

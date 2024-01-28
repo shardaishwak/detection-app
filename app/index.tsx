@@ -14,6 +14,8 @@ LogBox.ignoreAllLogs(true);
 
 const { width, height } = Dimensions.get("window");
 
+
+
 export default function App() {
 	return (
 		<SafeAreaView style={styles.container}>
