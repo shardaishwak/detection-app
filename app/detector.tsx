@@ -247,7 +247,7 @@ const Detector = forwardRef((props: DetectorProps, ref) => {
 		<View style={styles.container}>
 			<TensorCamera
 				ref={ref}
-				style={styles.camera}
+				style={[styles.camera]}
 				// Tensor related props
 				type={Camera.Constants.Type.front}
 				cameraTextureHeight={textureDims.height}
@@ -259,8 +259,27 @@ const Detector = forwardRef((props: DetectorProps, ref) => {
 				autorender={true}
 				useCustomShadersToResize={false}
 			/>
-			<GLView style={styles.canvas} onContextCreate={onCanvasCreate} />
-			<Text style={{ position: "absolute", top: 100, right: 20, zIndex: 999 }}>
+			<GLView
+				style={[
+					styles.canvas,
+					{
+						borderWidth: 10,
+						borderColor:
+							score < 0.7 ? "red" : score < 0.95 ? "yellow" : "green",
+						borderStyle: "solid",
+						borderRadius: 40,
+					},
+				]}
+				onContextCreate={onCanvasCreate}
+			/>
+			<Text
+				style={{
+					position: "absolute",
+					top: 100,
+					right: 20,
+					zIndex: 999,
+				}}
+			>
 				{score}
 			</Text>
 		</View>
