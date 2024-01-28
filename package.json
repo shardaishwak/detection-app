@@ -20,6 +20,7 @@
     "expo-2d-context": "^0.0.4",
     "expo-camera": "~14.0.3",
     "expo-constants": "~15.4.5",
+    "expo-file-system": "~16.0.5",
     "expo-gl": "^13.6.0",
     "expo-gl-cpp": "^11.4.0",
     "expo-image-manipulator": "^11.8.0",

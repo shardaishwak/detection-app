@@ -6,4 +6,14 @@ export const imageURIState = atom({
 	default: "",
 });
 
+export const previousImageURIState = atom({
+	key: "previousImageURI",
+	default: "",
+});
+
+export const modificationTimeState = atom({
+	key: "modificationTimeState",
+	default: "",
+});
+
 // Path: recoilState.ts

@@ -8,7 +8,7 @@ import {
 	Text,
 } from "react-native";
 import React from "react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 
 LogBox.ignoreAllLogs(true);
 
@@ -29,6 +29,11 @@ export default function App() {
 			<Link href={"/camera"} style={styles.button}>
 				Let's recreate!
 			</Link>
+			<Pressable onPress={() => router.push("/map")}>
+				<Text style={{ marginTop: 24, fontWeight: "600", color: "#5001F9" }}>
+					Or go to albums
+				</Text>
+			</Pressable>
 		</SafeAreaView>
 	);
 }

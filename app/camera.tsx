@@ -21,14 +21,19 @@ import * as ImagePicker from "expo-image-picker";
 import Detector from "./detector";
 import * as FileSystem from "expo-file-system";
 import { useRecoilState } from "recoil";
-import { imageURIState } from "../recoilState";
+import {
+	imageURIState,
+	modificationTimeState,
+	previousImageURIState,
+} from "../recoilState";
+import * as FileSystem from "expo-file-system";
 
 LogBox.ignoreAllLogs(true);
 
 const { width, height } = Dimensions.get("window");
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-const PolaroidEffect = ({ imageUri }) => {
+const PolaroidEffect = ({ imageUri, selectedImageUri, modificationTime }) => {
 	const marginTop = useRef(new Animated.Value(-150 * 1.2)).current;
 	const width = useRef(new Animated.Value(100 * 1.2)).current;
 	const height = useRef(new Animated.Value(150 * 1.2)).current;
@@ -37,6 +42,12 @@ const PolaroidEffect = ({ imageUri }) => {
 
 	// recoil to save imageURI
 	const [imageURI, setImageURI] = useRecoilState(imageURIState);
+	const [previousImageURI, setPreviousImageURI] = useRecoilState(
+		previousImageURIState
+	);
+	const [modificationTimeSt, setModificationTimeState] = useRecoilState(
+		modificationTimeState
+	);
 
 	const widthImage = useRef(new Animated.Value(80 * 1.2)).current;
 	const heightImage = useRef(new Animated.Value(100 * 1.2)).current;
@@ -155,6 +166,8 @@ const PolaroidEffect = ({ imageUri }) => {
 					router.push("/add");
 					// save to recoil
 					setImageURI(imageUri);
+					setPreviousImageURI(selectedImageUri);
+					setModificationTimeState(modificationTime);
 				}}
 				style={[styles.button, { opacity: fadeIn }]}
 			>
@@ -174,6 +187,7 @@ export default function App() {
 	const [imageUri, setImageUri] = useState(null);
 	const [chosenImage, setChosenImage] = useState<string | null>(null);
 	const [id, setId] = useState<string | null>(null);
+	const [modificationTime, setModificationTime] = useState(null);
 
 	const router = useRouter();
 
@@ -218,12 +232,13 @@ export default function App() {
 		// No permissions request is necessary for launching the image library
 		let result = await ImagePicker.launchImageLibraryAsync({
 			mediaTypes: ImagePicker.MediaTypeOptions.All,
-			allowsEditing: true,
-			aspect: [4, 3],
+			allowsEditing: false,
 			quality: 1,
 		});
 
 		if (!result.canceled) {
+			const file = await FileSystem.getInfoAsync(result.assets[0].uri);
+			setModificationTime(file.modificationTime);
 			setChosenImage(result.assets[0].uri);
 			setId(uuid.v4().toString());
 		}
@@ -305,7 +320,13 @@ export default function App() {
 					</View>
 				</>
 			)}
-			{imageUri && <PolaroidEffect imageUri={imageUri} />}
+			{imageUri && (
+				<PolaroidEffect
+					modificationTime={modificationTime}
+					selectedImageUri={chosenImage}
+					imageUri={imageUri}
+				/>
+			)}
 		</View>
 	);
 }

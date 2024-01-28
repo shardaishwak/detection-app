@@ -12,7 +12,7 @@ import {
 	View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import MapView, { Marker } from "react-native-maps";
 LogBox.ignoreAllLogs(true);
 import * as Location from "expo-location";
@@ -27,12 +27,13 @@ export default function App() {
 	const [location, setLocation] = useState<Location.LocationObject>(null);
 	const [errorMsg, setErrorMsg] = useState("");
 
+	const [map, setMap] = useState(false);
 	const [albums, setAlbums] = useState([]);
 
 	console.log(albums);
 
 	// get imageURI from recoil
-	const [imageURI, _] = useRecoilState(imageURIState);
+	const [imageURI, setImageURI] = useRecoilState(imageURIState);
 
 	useEffect(() => {
 		(async () => {
@@ -102,29 +103,10 @@ export default function App() {
 		}
 	};
 
-	const callbackAddImageToAlbum = async (title: string) => {
-		const a = JSON.parse(await AsyncStorage.getItem("albums"));
-		const albums = a.albums;
-		const albumIndex = albums.findIndex((a) => a.title === title);
-		console.log();
-
-		const imgObj = {
-			id: Math.floor(Math.random() * 10000000),
-			imageUri: imageURI,
-			location: location,
-			createdAt: new Date(),
-		};
-
-		albums[albumIndex].images.push(imgObj);
-		albums[albumIndex].count++;
-
-		await AsyncStorage.setItem("albums", JSON.stringify({ albums: albums }));
-		setAlbums(albums);
-	};
 	const renderItem = ({ item, index }) => (
 		<Pressable
 			onPress={
-				index === 0 ? callbackCreate : () => callbackAddImageToAlbum(item.title)
+				index === 0 ? callbackCreate : () => router.push("/album/" + item.title)
 			}
 			style={{ alignItems: "center" }}
 		>
@@ -170,8 +152,12 @@ export default function App() {
 				<Text style={[styles.text1, { marginBottom: 24 }]}>Map</Text>
 				<Text>Map</Text>
 			</View>
+			{!map && <Text>Map is loading...</Text>}
 			{location && (
 				<MapView
+					onMapReady={() => {
+						setMap(true);
+					}}
 					style={{ width: width, height: (width * 3) / 4 }}
 					initialRegion={{
 						latitude: location.coords.latitude,
@@ -235,8 +221,11 @@ export default function App() {
 				source={require("../assets/polaroid.png")}
 				style={styles.polaroid}
 			/>
-			<Pressable style={[styles.button]}>
-				<Text style={styles.buttonText}>Save in album</Text>
+			<Pressable
+				onPress={() => router.push("/camera")}
+				style={[styles.button, { marginBottom: 48 }]}
+			>
+				<Text style={styles.buttonText}>Take another!</Text>
 			</Pressable>
 		</ScrollView>
 	);

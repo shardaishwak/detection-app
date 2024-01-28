@@ -18,7 +18,11 @@ LogBox.ignoreAllLogs(true);
 import * as Location from "expo-location";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRecoilState } from "recoil";
-import { imageURIState } from "../recoilState";
+import {
+	imageURIState,
+	modificationTimeState,
+	previousImageURIState,
+} from "../recoilState";
 
 const { width, height } = Dimensions.get("window");
 
@@ -33,7 +37,13 @@ const Album = () => {
 	const [selected, setSelected] = useState("");
 
 	// get imageURI from recoil
-	const [imageURI, _] = useRecoilState(imageURIState);
+	const [imageURI, setImageURI] = useRecoilState(imageURIState);
+	const [previousImageURI, setPreviousImageURI] = useRecoilState(
+		previousImageURIState
+	);
+	const [modificationTimeSt, setModificationTimeState] = useRecoilState(
+		modificationTimeState
+	);
 
 	useEffect(() => {
 		(async () => {
@@ -58,7 +68,7 @@ const Album = () => {
 	}, []);
 	const callbackCreate = async () => {
 		await Alert.prompt("Title", "Give a name to the album", async (value) => {
-			await AsyncStorage.clear();
+			// await AsyncStorage.clear();
 			await callbackCreateAlbum(value);
 		});
 	};
@@ -110,8 +120,10 @@ const Album = () => {
 		const imgObj = {
 			id: Math.floor(Math.random() * 10000000),
 			imageUri: imageURI,
+			previousImageUri: previousImageURI,
 			location: location,
 			createdAt: new Date(),
+			modificationTime: modificationTimeSt,
 		};
 
 		albums[albumIndex].images.push(imgObj);
@@ -119,6 +131,9 @@ const Album = () => {
 
 		await AsyncStorage.setItem("albums", JSON.stringify({ albums: albums }));
 		setAlbums(albums);
+		setImageURI("");
+		setPreviousImageURI("");
+		setModificationTimeState("");
 		router.push("/map");
 	};
 
