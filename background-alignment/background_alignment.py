@@ -17,9 +17,15 @@ def get_key_points(img) -> list[tuple, np.ndarray]:
         - then blurring to remove noise for better keypoint extraction, kernel_size=(15, 15)
         - then using SIFT to detect scale invariant features
 
-    @:return
-        - tuple: representing the image keypoints
-        - np.ndarray: representing the image descriptors
+    Parameters
+    ----------
+    img : np.ndarray
+        The image to extract the keypoints from
+    
+    Returns
+    -------
+    list[tuple, np.ndarray]:
+        The keypoints and descriptors of the image
     """
 
     img_grey = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -35,8 +41,17 @@ def get_sift_matches(descriptors_prev, descriptors_curr):
         - then filtering the matches by the ratio test (0.75)
         - then sorting the matches by distance and returning the top 10 matches
     
-    @:return
-        - list: representing the top 10 matches between the two images
+    Parameters
+    ----------
+    descriptors_prev : np.ndarray
+        The descriptors of the previous image
+    descriptors_curr : np.ndarray
+        The descriptors of the current image
+    
+    Returns
+    ------
+    list:
+        The top 10 matches between the two images
     """
 
     matches = flann.knnMatch(descriptors_prev, descriptors_curr, k=2)
@@ -52,9 +67,16 @@ def get_sift_matches(descriptors_prev, descriptors_curr):
 
 def get_cv2_image(image_bytes_str: str) -> np.ndarray:
     """Given the image string of bytes, return the cv2 image
+
+    Parameters
+    ----------
+    image_bytes_str : str
+        The image string of bytes
     
-    @:return
-        - np.ndarray: representing the image
+    Returns
+    -------
+    np.ndarray:
+        The cv2 image
     """
 
     image_bytes = base64.b64decode(image_bytes_str)
@@ -65,8 +87,15 @@ def get_cv2_image(image_bytes_str: str) -> np.ndarray:
 def get_edge_image_from_bytes(image_bytes_str: str) -> list:
     """Given the image string of bytes, return the edge image overlay
     
-    @:return
-        - list: representing the edge image overlay
+    Parameters
+    ----------
+    image_bytes_str : str
+        The image string of bytes
+    
+    Return
+    ------
+    list:
+        The edge image overlay, keypoints, and descriptors
     """
 
     img = get_cv2_image(image_bytes_str)
@@ -92,13 +121,22 @@ def make_matching(keypoints_1: tuple, descriptors_1: np.ndarray, image_bytes_str
     """Given the keypoints and descriptors of the previous image, and the current image,
     return whether the images are aligned and the direction of movement
     
-    @:return
-        - bool: representing whether the images are aligned
-        - list: representing the direction of movement
+    Parameters
+    ----------
+    keypoints_1 : tuple
+        The keypoints of the previous image
+    descriptors_1 : np.ndarray
+        The descriptors of the previous image
+    image_bytes_str : str
+        The current image string of bytes that we want to compare
+
+    Return
+    ------
+    tuple:
+        The boolean of whether the images are aligned, and the direction of movement
     """
     
     curr_image = get_cv2_image(image_bytes_str)
-    print(image_bytes_str)
     keypoints_2, descriptors_2 = get_key_points(curr_image)
 
     good_matches = get_sift_matches(descriptors_1, descriptors_2)
@@ -111,6 +149,7 @@ def make_matching(keypoints_1: tuple, descriptors_1: np.ndarray, image_bytes_str
     is_aligned = -10 <= x_movement <= 10 and -10 <= y_movement <= 10
 
     return is_aligned, [int(x_movement), int(y_movement)]
+
 
 # Below please find the original code for reference, we tested with stereo for 3D reconstruction of the
 # translation vector and rotation matrix, but it was not stable enough, it kept giving us different
